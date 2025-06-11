@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Tricks Collection - 100+ CSS Tricks</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CSS Tricks Collection</h1>
+            <p>100+ Real CSS Tricks for Modern Web Development</p>
+        </div>
+
+        <div id="tricks-container" class="tricks-grid">
+            <!-- Tricks will be dynamically loaded here -->
+        </div>
+
+        <div class="pagination">
+            <button id="prev-btn" onclick="changePage(-1)">← Previous</button>
+            <div id="page-numbers"></div>
+            <button id="next-btn" onclick="changePage(1)">Next →</button>
+        </div>
+
+        <div class="page-info">
+            <span id="page-info">Page 1 of 11</span>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
