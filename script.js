@@ -724,7 +724,7 @@ input:read-write {
         ];
 
         let currentPage = 1;
-        const tricksPerPage = 10;
+        const tricksPerPage = 9;
         let filteredTricks = tricks;
         let currentSearchTerm = '';
 
