@@ -723,31 +723,42 @@ input:read-write {
             }
         ];
 
-        let currentPage = 1;
-        const tricksPerPage = 9;
-        let filteredTricks = tricks;
-        let currentSearchTerm = '';
+       let currentPage = 1;
+const tricksPerPage = 9;
+let filteredTricks = tricks;
+let currentSearchTerm = '';
 
-        function highlightText(text, searchTerm) {
-            if (!searchTerm) return text;
-            const regex = new RegExp(`(${searchTerm})`, 'gi');
-            return text.replace(regex, '<span class="highlight">$1</span>');
-        }
+function highlightText(text, searchTerm) {
+    if (!searchTerm || !searchTerm.trim()) return text;
+    const cleanTerm = searchTerm.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escape special regex chars
+    try {
+        const regex = new RegExp(`(${cleanTerm})`, 'gi');
+        return text.replace(regex, '<span class="highlight">$1</span>');
+    } catch (e) {
+        console.error('Regex error:', e);
+        return text;
+    }
+}
+
 
         function searchTricks(searchTerm) {
-            currentSearchTerm = searchTerm.toLowerCase();
+            console.log('Search function called with:', searchTerm); // Debug log
+            currentSearchTerm = searchTerm.toLowerCase().trim();
             
             if (!currentSearchTerm) {
-                filteredTricks = tricks;
+                filteredTricks = [...tricks]; // Create a copy
+                console.log('No search term, showing all tricks:', filteredTricks.length);
             } else {
-                filteredTricks = tricks.filter(trick => 
-                    trick.title.toLowerCase().includes(currentSearchTerm) ||
-                    trick.description.toLowerCase().includes(currentSearchTerm) ||
-                    trick.code.toLowerCase().includes(currentSearchTerm)
-                );
+                filteredTricks = tricks.filter(trick => {
+                    const titleMatch = trick.title.toLowerCase().includes(currentSearchTerm);
+                    const descMatch = trick.description.toLowerCase().includes(currentSearchTerm);
+                    const codeMatch = trick.code.toLowerCase().includes(currentSearchTerm);
+                    return titleMatch || descMatch || codeMatch;
+                });
+                console.log('Filtered tricks:', filteredTricks.length); // Debug log
             }
             
-            currentPage = 1;
+            currentPage = 1; // Reset to first page
             updateSearchResults();
             displayTricks(currentPage);
             updatePagination();
@@ -842,6 +853,7 @@ input:read-write {
         }
 
         function changePage(direction) {
+            const totalPages = Math.ceil(filteredTricks.length / tricksPerPage);
             const newPage = currentPage + direction;
             if (newPage >= 1 && newPage <= totalPages) {
                 currentPage = newPage;
@@ -852,6 +864,7 @@ input:read-write {
         }
 
         function goToPage(page) {
+            const totalPages = Math.ceil(filteredTricks.length / tricksPerPage);
             if (page >= 1 && page <= totalPages) {
                 currentPage = page;
                 displayTricks(currentPage);
@@ -861,14 +874,48 @@ input:read-write {
         }
 
         // Initialize the page
+        filteredTricks = [...tricks]; // Initialize with all tricks
         displayTricks(currentPage);
         updatePagination();
+        
+        console.log('Page initialized with', tricks.length, 'tricks'); // Debug log
+
+        // Search functionality
+        const searchInput = document.getElementById('search-input');
+        const clearBtn = document.getElementById('clear-search');
+        
+        // Add event listeners after DOM is ready
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                console.log('Searching for:', e.target.value); // Debug log
+                searchTricks(e.target.value.trim());
+            });
+        }
+        
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                searchTricks('');
+                searchInput.focus();
+            });
+        }
 
         // Add keyboard navigation
         document.addEventListener('keydown', function(e) {
+            // Don't interfere with typing in search input
+            if (e.target === searchInput) return;
+            
+            const totalPages = Math.ceil(filteredTricks.length / tricksPerPage);
+            
             if (e.key === 'ArrowLeft' && currentPage > 1) {
                 changePage(-1);
             } else if (e.key === 'ArrowRight' && currentPage < totalPages) {
                 changePage(1);
+            } else if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
+                e.preventDefault();
+                searchInput.focus();
+            } else if (e.key === 'Escape' && searchInput.value) {
+                searchInput.value = '';
+                searchTricks('');
             }
         });
